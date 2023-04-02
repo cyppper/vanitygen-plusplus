@@ -1210,6 +1210,10 @@ vg_read_file(FILE *fp, char ***result, int *rescount)
 								sizeof(char*) *
 								nalloc);
 					}
+//					int len = strlen(pat);
+//                    if (len > 0) {
+//                        pat[len - 1] = '\0';
+//                    }
 					patterns[npatterns] = pat;
 					npatterns++;
 					fprintf(stderr,	"\rLoading Pattern #%d: %s", npatterns, pat);

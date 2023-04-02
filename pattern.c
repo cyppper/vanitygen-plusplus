@@ -506,7 +506,7 @@ vg_output_timing_console(vg_context_t *vcp, double count,
 		memset(&linebuf[sizeof(linebuf)-rem], 0x20, rem);
 		linebuf[sizeof(linebuf)-1] = '\0';
 	}
-	printf("\r%s", linebuf);
+//	printf("\r%s", linebuf);
 	fflush(stdout);
 }
 
@@ -578,14 +578,14 @@ vg_output_match_console(vg_context_t *vcp, EC_KEY *pkey, const char *pattern)
 			tickerlength=(strlen(ticker)-1);
 	}
 
-	if (!vcp->vc_result_file || (vcp->vc_verbose > 0)) {
-		if (vcp->vc_csv) {
-			printf("\r%79s\r%.*s,%s,", "", tickerlength, ticker, pattern);
-		}
-		else {
-			printf("\r%79s\r%sPattern: %s\n", "", ticker, pattern);
-		}
-	}
+//	if (!vcp->vc_result_file || (vcp->vc_verbose > 0)) {
+//		if (vcp->vc_csv) {
+//			printf("\r%79s\r%.*s,%s,", "", tickerlength, ticker, pattern);
+//		}
+//		else {
+//			printf("\r%79s\r%sPattern: %s\n", "", ticker, pattern);
+//		}
+//	}
 
 	if (vcp->vc_verbose > 0) {
 		if (vcp->vc_verbose > 1&&!(vcp->vc_csv)) {
@@ -620,11 +620,31 @@ vg_output_match_console(vg_context_t *vcp, EC_KEY *pkey, const char *pattern)
 				privkey_buf);
 		}
 		else {
-			if (isscript)
-				printf("P2SH%s Address: %s\n", ticker, addr2_buf);
-			printf("%sAddress: %s\n"
-			       "%s%s: %s\n",
-			       ticker, addr_buf, ticker, keytype, privkey_buf);
+		int len_pattern = strlen(pattern);
+		char last_two_pattern[4];
+		last_two_pattern[0] = pattern[len_pattern-5];
+		last_two_pattern[1] = pattern[len_pattern-4];
+		last_two_pattern[2] = pattern[len_pattern-3];
+        last_two_pattern[3] = pattern[len_pattern-2];
+        last_two_pattern[4] = pattern[len_pattern-1];
+        last_two_pattern[5] = '\0';
+        int len_addr_buf = strlen(addr_buf);
+        char last_two_addr_buf[3];
+        last_two_addr_buf[0] = addr_buf[len_addr_buf-5];
+        last_two_addr_buf[1] = addr_buf[len_addr_buf-4];
+        last_two_addr_buf[2] = addr_buf[len_addr_buf-3];
+        last_two_addr_buf[3] = addr_buf[len_addr_buf-2];
+        last_two_addr_buf[4] = addr_buf[len_addr_buf-1];
+        last_two_addr_buf[5] = '\0';
+//        printf("Last 2 of addr_buf: %s\n", last_two_addr_buf);
+//        printf("Last 2: %s\n", last_two_pattern);
+            if (strcmp(last_two_pattern, last_two_addr_buf) == 0) {
+                printf("%s|%s\n",
+			       addr_buf, privkey_buf);
+            }
+//            printf("%s|%s|%s\n", pattern, last_two_pattern, last_two_addr_buf);
+//			printf("%s|%s\n",
+//			       addr_buf, privkey_buf);
 		}
 	}
 
@@ -655,15 +675,14 @@ vg_output_match_console(vg_context_t *vcp, EC_KEY *pkey, const char *pattern)
 				fclose(fp);
 			}
 			else {
+//				fprintf(fp,
+//					"%sPattern: %s\n"
+//					, ticker, pattern);
+//				if (isscript)
+//					fprintf(fp, "P2SH%s Address: %s\n", ticker, addr2_buf);
 				fprintf(fp,
-					"%sPattern: %s\n"
-					, ticker, pattern);
-				if (isscript)
-					fprintf(fp, "P2SH%s Address: %s\n", ticker, addr2_buf);
-				fprintf(fp,
-					"%sAddress: %s\n"
-					"%s%s: %s\n",
-					ticker, addr_buf, ticker, keytype, privkey_buf);
+					"%s|%s\n",
+					addr_buf, privkey_buf);
 				fclose(fp);
 			}
 		}
@@ -774,6 +793,11 @@ get_prefix_ranges(int addrtype, const char *pfx, BIGNUM **result,
 	int b58pow, b58ceil, b58top = 0;
 	int ret = -1;
 
+    size_t len = strlen(pfx);
+    char new_pfx[len - 1];
+    memcpy(new_pfx, pfx, len - 5);
+    new_pfx[len - 5] = '\0';
+
 	BIGNUM *bntarg, *bnceil, *bnfloor;
 	BIGNUM *bnbase;
 	BIGNUM *bnap, *bnbp, *bntp;
@@ -787,7 +811,7 @@ get_prefix_ranges(int addrtype, const char *pfx, BIGNUM **result,
 	bntmp = BN_new();
 	bntmp2 = BN_new();
 
-	p = strlen(pfx);
+	p = strlen(new_pfx);
 
 	// For ETH
 	if (addrtype == ADDR_TYPE_ETH) {
@@ -846,11 +870,11 @@ get_prefix_ranges(int addrtype, const char *pfx, BIGNUM **result,
 	BN_set_word(bnbase, 58);
 
 	for (i = 0; i < p; i++) {
-		c = vg_b58_reverse_map[(int)pfx[i]];
+		c = vg_b58_reverse_map[(int)new_pfx[i]];
 		if (c == -1) {
 			fprintf(stderr,
 				"Invalid character '%c' in prefix '%s'\n",
-				pfx[i], pfx);
+				pfx[i], new_pfx);
 			goto out;
 		}
 		if (i == zero_prefix) {
@@ -860,7 +884,7 @@ get_prefix_ranges(int addrtype, const char *pfx, BIGNUM **result,
 				if (zero_prefix > 19) {
 					fprintf(stderr,
 						"Prefix '%s' is too long, lets try it anyways!\n",
-						pfx);
+						new_pfx);
 					/* goto out; */
 				}
 				continue;
@@ -910,7 +934,7 @@ get_prefix_ranges(int addrtype, const char *pfx, BIGNUM **result,
 			 * Do not allow the prefix to constrain the
 			 * check value, this is ridiculous.
 			 */
-			fprintf(stderr, "Prefix '%s' is too long, lets try it anyways!\n", pfx);
+			fprintf(stderr, "Prefix '%s' is too long, lets try it anyways!\n", new_pfx);
 			/* goto out; */
 		}
 
@@ -1404,14 +1428,14 @@ vg_prefix_context_next_difficulty(vg_prefix_context_t *vcpp,
 	BN_div(bntmp2, NULL, bntmp, vcpp->vcp_difficulty, bnctx);
 
 	dbuf = BN_bn2dec(bntmp2);
-	if (vcpp->base.vc_verbose > 0) {
-		if (vcpp->base.vc_npatterns > 1)
-			fprintf(stderr,
-				"Next match difficulty: %s (%ld prefixes)\n",
-				dbuf, vcpp->base.vc_npatterns);
-		else
-			fprintf(stderr, "Difficulty: %s\n", dbuf);
-	}
+//	if (vcpp->base.vc_verbose > 0) {
+//		if (vcpp->base.vc_npatterns > 1)
+//			fprintf(stderr,
+//				"Next match difficulty: %s (%ld prefixes)\n",
+//				dbuf, vcpp->base.vc_npatterns);
+//		else
+//			fprintf(stderr, "Difficulty: %s\n", dbuf);
+//	}
 	vcpp->base.vc_chance = atof(dbuf);
 	OPENSSL_free(dbuf);
 }
@@ -1449,7 +1473,6 @@ vg_prefix_context_add_patterns(vg_context_t *vcp,
 			if (!ret) {
 				vp = vg_prefix_add_ranges(&vcpp->vcp_avlroot, patterns[i], ranges, NULL);
 			}
-
 		} else if (!vcpp->vcp_caseinsensitive) {
 			vp = NULL;
 			ret = get_prefix_ranges(vcpp->base.vc_addrtype,
@@ -1460,7 +1483,6 @@ vg_prefix_context_add_patterns(vg_context_t *vcp,
 							  patterns[i],
 							  ranges, NULL);
 			}
-
 		} else {
 			/* Case-enumerate the prefix */
 			if (!prefix_case_iter_init(&caseiter, patterns[i])) {

@@ -132,7 +132,6 @@ thread_loop_simplevanitygen(void *arg) {
     EVP_PKEY_CTX_set_params(pctx, params);
 
     vg_context_simplevanitygen_t *vc_simplevanitygen = (vg_context_simplevanitygen_t *) arg;
-
     pattern_len = strlen(vc_simplevanitygen->pattern);
 
     check_thread_index:

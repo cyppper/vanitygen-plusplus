@@ -201,7 +201,7 @@ main(int argc, char **argv)
 			}
 			else {
                 // Read from base58prefix.txt
-                fprintf(stderr, "Generating %s Address\n", optarg);
+//                fprintf(stderr, "Generating %s Address\n", optarg);
                 if (vg_get_altcoin(optarg, &addrtype, &privtype, NULL)) {
                     return 1;
                 }

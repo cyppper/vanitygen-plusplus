@@ -476,7 +476,7 @@ main(int argc, char **argv)
 			}
 			else {
 				// Read from base58prefix.txt
-				fprintf(stderr, "Generating %s Address\n", optarg);
+//				fprintf(stderr, "Generating %s Address\n", optarg);
 				if (vg_get_altcoin(optarg, &addrtype, &privtype, &bech32_hrp)) {
 					return 1;
 				}
@@ -673,7 +673,6 @@ main(int argc, char **argv)
                 vc_ed25519->match_location = 0; // match any location
             }
         }
-
         if (vc_ed25519->match_location == 1 && vc_ed25519->pattern[0] != 'G') {
             fprintf(stderr, "Prefix '%s' not possible\n", vc_ed25519->pattern);
             fprintf(stderr, "Hint: Run vanitygen++ with \"-C LIST\" for a list of valid prefixes.  Also note that many coins only allow certain characters as the second character in the prefix.\n");
@@ -712,7 +711,7 @@ main(int argc, char **argv)
 			return 1;
 		}
 		patterns = &argv[optind];
-		printf("Pattern: %s\n", *patterns);
+		printf("Pattern1: %s\n", *patterns);
 
 		vg_context_simplevanitygen_t *vc_simplevanitygen = NULL;
 		vc_simplevanitygen = (vg_context_simplevanitygen_t *) malloc(sizeof(*vc_simplevanitygen));
@@ -727,11 +726,11 @@ main(int argc, char **argv)
 		if (vc_simplevanitygen->vc_numpairs == 0) {
 			vc_simplevanitygen->vc_numpairs = 1;
 		}
+
 		vc_simplevanitygen->pattern = *patterns;
 		vc_simplevanitygen->match_location = 1; // By default, match begin location
 
 		size_t pattern_len = strlen(vc_simplevanitygen->pattern);
-
 		if (regex) {
 			fprintf(stderr, "WARNING: only ^ and $ is supported in regular expressions currently\n");
 			if (vc_simplevanitygen->pattern[0] == '^') {
@@ -779,7 +778,7 @@ main(int argc, char **argv)
 			return 1;
 		}
 		patterns = &argv[optind];
-		printf("Pattern: %s\n", *patterns);
+		printf("Pattern2: %s\n", *patterns);
 
 		vg_context_simplevanitygen_t *vc_simplevanitygen = NULL;
 		vc_simplevanitygen = (vg_context_simplevanitygen_t *) malloc(sizeof(*vc_simplevanitygen));
@@ -794,11 +793,11 @@ main(int argc, char **argv)
 		if (vc_simplevanitygen->vc_numpairs == 0) {
 			vc_simplevanitygen->vc_numpairs = 1;
 		}
+
 		vc_simplevanitygen->pattern = *patterns;
 		vc_simplevanitygen->match_location = 1; // By default, match begin location
 
 		size_t pattern_len = strlen(vc_simplevanitygen->pattern);
-
 		if (regex) {
 			fprintf(stderr, "WARNING: only ^ and $ is supported in regular expressions currently\n");
 			if (vc_simplevanitygen->pattern[0] == '^') {
